@@ -1,0 +1,1 @@
+FoodLink is a mobile application designed to reduce food waste by connecting food donors (restaurants, events, households) with NGOs and individuals in need. The platform enables efficient redistribution of surplus food through a user-friendly interface, ensuring that excess food reaches the right people instead of being wasted.

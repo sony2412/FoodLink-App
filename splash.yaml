@@ -1,0 +1,13 @@
+flutter_native_splash:
+  color: "#E1F5EE"          # light teal (matches app's light bg)
+  color_dark: "#0D3D30"     # exact dark bg color from your onboarding
+  image: "assets/images/logo-white.png"
+  image_dark: "assets/images/dark_logo.png"
+
+  android_12:
+    color: "#E1F5EE"
+    color_dark: "#0D3D30"
+    image: "assets/images/logo-white.png"
+    image_dark: "assets/images/dark_logo.png"
+
+  web: false #since web will not have any splash screen
