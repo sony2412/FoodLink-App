@@ -58,6 +58,7 @@ class FTexts {
   static const String registerSuccess = "Account created successfully!";
   static const String passwordResetSent = "Password reset link sent to your email.";
   static const String signingIn = "Signing In...";
+  static const String Continue = "Continue";
 
   // ── Login Screen ──────────────────────────────────────────────
   static const String loginTitle = "Welcome Back";

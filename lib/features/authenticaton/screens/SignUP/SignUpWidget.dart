@@ -29,9 +29,11 @@ class SignUpFormWidget extends StatelessWidget {
               controller: controller.fullName,
               keyboardType: TextInputType.name,
               textCapitalization: TextCapitalization.words,
+              style: const TextStyle(color: Colors.white),
               validator: (value) => FValidator.validateFullName(value),
               decoration: const InputDecoration(
                 labelText: FTexts.fullName,
+                  labelStyle: const TextStyle(color: Colors.white),
                 prefixIcon: Icon(Iconsax.user),
               ),
             ),
@@ -41,9 +43,11 @@ class SignUpFormWidget extends StatelessWidget {
             TextFormField(
               controller: controller.email,
               keyboardType: TextInputType.emailAddress,
+              style: const TextStyle(color: Colors.white),
               validator: (value) => FValidator.validateEmail(value),
               decoration: const InputDecoration(
                 labelText: FTexts.email,
+                labelStyle: const TextStyle(color: Colors.white),
                 prefixIcon: Icon(Iconsax.sms),
               ),
             ),
@@ -53,9 +57,11 @@ class SignUpFormWidget extends StatelessWidget {
             TextFormField(
               controller: controller.phoneNumber,
               keyboardType: TextInputType.phone,
+              style: const TextStyle(color: Colors.white),
               validator: (value) => FValidator.validatePhoneNumber(value),
               decoration: const InputDecoration(
                 labelText: FTexts.phoneNumber,
+                labelStyle: const TextStyle(color: Colors.white),
                 prefixIcon: Icon(Iconsax.call),
                 prefix: Padding(
                   padding: EdgeInsets.only(right: 8),
@@ -64,6 +70,7 @@ class SignUpFormWidget extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -76,9 +83,11 @@ class SignUpFormWidget extends StatelessWidget {
                   () => TextFormField(
                 controller: controller.password,
                 obscureText: controller.hidePassword.value,
+                    style: const TextStyle(color: Colors.white),
                 validator: (value) => FValidator.validatePassword(value),
                 decoration: InputDecoration(
                   labelText: FTexts.password,
+                  labelStyle: const TextStyle(color: Colors.white),
                   prefixIcon: const Icon(Iconsax.password_check),
                   suffixIcon: IconButton(
                     onPressed: () => controller.hidePassword.value =
@@ -100,12 +109,14 @@ class SignUpFormWidget extends StatelessWidget {
                   () => TextFormField(
                 controller: controller.confirmPassword,
                 obscureText: controller.hideConfirmPassword.value,
+                    style: const TextStyle(color: Colors.white),
                 validator: (value) => FValidator.validateConfirmPassword(
                   controller.password.text,
                   value,
                 ),
                 decoration: InputDecoration(
                   labelText: FTexts.confirmPassword,
+                  labelStyle: const TextStyle(color: Colors.white),
                   prefixIcon: const Icon(Iconsax.shield_tick),
                   suffixIcon: IconButton(
                     onPressed: () => controller.hideConfirmPassword.value =
