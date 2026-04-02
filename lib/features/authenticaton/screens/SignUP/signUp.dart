@@ -9,7 +9,6 @@ import '../../../../../utils/constants/sizes.dart';
 import '../../../../../utils/constants/text_strings.dart';
 import '../login/login.dart';
 import 'SignUpWidget.dart';
-import 'widgets/signup_form_widget.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key, required this.role});
@@ -86,11 +85,14 @@ class SignUpScreen extends StatelessWidget {
         
                       /// Social footer
                       _SignupSocialFooter(
-                        text1: FTexts.alreadyHaveAccount
+                        text1: '${FTexts.alreadyHaveAccount
                             .split('?')
-                            .first + '? ',
+                            .first}? ',
                         text2: FTexts.signIn,
-                        onPressed: () => Get.off(() => const LoginScreen()),
+                        onPressed: () => Get.off(
+                              () => const LoginScreen(),
+                          arguments: role,
+                        ),
                       ),
         
                       const SizedBox(height: FSizzes.spaceBtwSections),

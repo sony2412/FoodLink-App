@@ -75,6 +75,8 @@ class FTexts {
   static const String forgotPasswordEmail = "Registered Email";
   static const String forgotPasswordBtn = "Send Reset Link";
   static const String forgotPasswordSent = "Reset link sent! Check your inbox.";
+  static const String changeYourPasswordTitle = "Reset Your Password";
+  static const String changeYourPasswordSubTitle = "Make sure your new password is safe and easy to remember";
 
   // ── Email Verification ────────────────────────────────────────
   static const String confirmEmail = "Verify your email address";

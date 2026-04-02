@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodlink/common/SignUp_Login/form_divider.dart';
 import 'package:foodlink/common/styles/spacing_style.dart';
-import 'package:foodlink/utils/constants/colors.dart';
 import 'package:foodlink/utils/constants/text_strings.dart';
 import 'package:foodlink/utils/helpers/helper_functions.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -11,13 +10,19 @@ import 'package:iconsax/iconsax.dart';
 import '../../../../common/SignUp_Login/social_button.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../forgetAndResetPasssword/forgetpassword.dart';
+import '../homescreen/donor_home.dart';
+import '../homescreen/recipitent_home.dart';
+import '../homescreen/volunteer_home.dart';
 import '../role_selection/role_selection.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
+
   @override
   Widget build(BuildContext context) {
+    final String role = Get.arguments ?? 'donor';
     final dark = FHelperFunctions.isDarkMode(context);
 
     return Scaffold(
@@ -188,7 +193,7 @@ class LoginScreen extends StatelessWidget {
                               ],
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () => Get.to(() => const ForgetpasswordScreen()),
                               style: TextButton.styleFrom(
                                 foregroundColor: const Color(0xFFEF9F27),
                               ),
@@ -203,7 +208,21 @@ class LoginScreen extends StatelessWidget {
                           width: double.infinity,
                           height: 52,
                           child: GestureDetector(
-                            onTap: () {},
+                            onTap: () {
+                              switch (role) {
+                                case 'donor':
+                                  Get.offAll(() => const DonorDashboard());
+                                  break;
+                                case 'recipient':
+                                  Get.offAll(() => const RecipientDashboard());
+                                  break;
+                                case 'volunteer':
+                                  Get.offAll(() => const VolunteerDashboard());
+                                  break;
+                                default:
+                                  Get.offAll(() => const DonorDashboard());
+                              }
+                            },
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
