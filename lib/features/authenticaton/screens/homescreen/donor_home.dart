@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import '../FindNGO/find_ngo.dart';
 import '../NotificationScreen/notification_screen.dart';
 import '../PostFood/post_food.dart';
 import '../ProfileScreen/profile_screen.dart';
@@ -217,7 +218,7 @@ class _DonorHomePage extends StatelessWidget {
             children: [
               // Notification bell
               GestureDetector(
-                onTap: () {},
+                onTap: () => Get.to(() => const NotificationsScreen()),
                 child: Container(
                   width: 42,
                   height: 42,
@@ -346,7 +347,7 @@ class _DonorHomePage extends StatelessWidget {
                   label: 'Find NGOs',
                   subtitle: 'Nearby recipients',
                   color: const Color(0xFF5DCAA5),
-                  onTap: () {},
+                  onTap: ()  => Get.to(() => const FindNGOsScreen()),
                 ),
               ),
             ],

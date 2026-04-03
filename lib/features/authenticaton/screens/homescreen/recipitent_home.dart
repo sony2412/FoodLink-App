@@ -7,6 +7,7 @@ import '../../../../utils/constants/text_strings.dart';
 import '../FoodDetail/food_detail.dart';
 import '../NotificationScreen/notification_screen.dart';
 import '../ProfileScreen/profile_screen.dart';
+import '../TrackDelivery/track_delivery.dart';
 import '../login/login.dart';
 
 
@@ -758,7 +759,7 @@ class _ProfileTab extends StatelessWidget {
 
             /// Menu items
             _MenuSection(title: 'Account', items: [
-              _MenuItem(icon: Iconsax.user, label: FTexts.editProfile, onTap: () => Get.to(() => EditProfileScreen(role: 'donor'))),
+              _MenuItem(icon: Iconsax.user, label: FTexts.editProfile, onTap: () => Get.to(() => EditProfileScreen(role: 'recipient'))),
               _MenuItem(icon: Iconsax.heart, label: FTexts.savedListings, onTap: () {}),
               _MenuItem(icon: Iconsax.notification, label: FTexts.notificationSettings, onTap: () => Get.to(() => const NotificationsScreen())),
             ]),
@@ -983,65 +984,104 @@ class _ClaimCard extends StatelessWidget {
           color: const Color(0xFF1D9E75).withValues(alpha: 0.2),
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width: 48, height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F6E56).withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Iconsax.cake,
-                color: Color(0xFF5DCAA5), size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  foodName,
-                  style: const TextStyle(
-                    color: Color(0xFF9FE1CB),
-                    fontSize: 14,
+          Row(
+            children: [
+              Container(
+                width: 48, height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F6E56).withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Iconsax.cake,
+                    color: Color(0xFF5DCAA5), size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      foodName,
+                      style: const TextStyle(
+                        color: Color(0xFF9FE1CB),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      donor,
+                      style: TextStyle(
+                        color: const Color(0xFF5DCAA5).withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$quantity • $claimedOn',
+                      style: TextStyle(
+                        color: const Color(0xFF5DCAA5).withValues(alpha: 0.5),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  donor,
-                  style: TextStyle(
-                    color: const Color(0xFF5DCAA5).withValues(alpha: 0.7),
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$quantity • $claimedOn',
-                  style: TextStyle(
-                    color: const Color(0xFF5DCAA5).withValues(alpha: 0.5),
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: statusColor.withValues(alpha: 0.4)),
-            ),
-            child: Text(
-              status,
-              style: TextStyle(
-                color: statusColor,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+
+          // ── Track button — only shows when Claim is Approved ──
+          if (status == FTexts.claimApproved) ...[
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => Get.to(() => const TrackDeliveryScreen()),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1D9E75), Color(0xFF0F6E56)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Iconsax.truck, color: Colors.white, size: 16),
+                    SizedBox(width: 8),
+                    Text(
+                      'Track Delivery',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

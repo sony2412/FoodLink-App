@@ -14,12 +14,12 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController    = TextEditingController(text: 'Rahul Sharma');
-  final _emailController   = TextEditingController(text: 'rahul@example.com');
-  final _phoneController   = TextEditingController(text: '+91 98765 43210');
-  final _orgController     = TextEditingController(text: 'Spice Garden Restaurant');
-  final _addressController = TextEditingController(text: 'Sector 21, Nagpur');
-  final _bioController     = TextEditingController(text: 'Passionate about reducing food waste and helping the community.');
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
+  late TextEditingController _orgController;
+  late TextEditingController _addressController;
+  late TextEditingController _bioController;
 
   bool _isSaving = false;
 
@@ -50,6 +50,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       borderRadius: 12,
       icon: const Icon(Iconsax.tick_circle, color: Colors.white),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.role == 'donor') {
+      _nameController = TextEditingController(text: 'Rahul Sharma');
+      _emailController = TextEditingController(text: 'rahul@example.com');
+      _phoneController = TextEditingController(text: '+91 98765 43210');
+      _orgController = TextEditingController(text: 'Spice Garden Restaurant');
+      _addressController = TextEditingController(text: 'Sector 21, Nagpur');
+      _bioController = TextEditingController(
+          text: 'Donating surplus food to help others');
+    }
+    else if (widget.role == 'recipient') {
+      _nameController = TextEditingController(text: 'Sarah Johnson');
+      _emailController = TextEditingController(text: 'ngo@example.com');
+      _phoneController = TextEditingController(text: '+91 91234 56789');
+      _orgController = TextEditingController(text: 'Helping Hands NGO');
+      _addressController = TextEditingController(text: 'Nagpur City');
+      _bioController = TextEditingController(
+          text: 'Providing food support to those in need');
+    }
+    else {
+      _nameController = TextEditingController(text: 'Ravi Sharma');
+      _emailController = TextEditingController(text: 'ravi@example.com');
+      _phoneController = TextEditingController(text: '+91 99887 66554');
+      _orgController = TextEditingController(text: '');
+      _addressController = TextEditingController(text: 'Nagpur');
+      _bioController = TextEditingController(
+          text: 'Volunteer delivering food to people');
+    }
   }
 
   @override
@@ -182,10 +215,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       width: 2,
                                     ),
                                   ),
-                                  child: const Center(
+                                  child: Center(
                                     child: Text(
-                                      'R',
-                                      style: TextStyle(
+                                      _nameController.text.isNotEmpty ? _nameController.text[0] : 'U',
+                                      style: const TextStyle(
                                         color: Color(0xFF9FE1CB),
                                         fontSize: 36,
                                         fontWeight: FontWeight.w700,
@@ -323,14 +356,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       color: Colors.white,
                                       fontSize: 15,
                                       fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.3,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 40),
                         ],
                       ),
                     ),
@@ -345,8 +377,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 }
 
-// ── REUSABLE WIDGETS ──────────────────────────────────────────────────────────
-
 class _SectionLabel extends StatelessWidget {
   const _SectionLabel({required this.label});
   final String label;
@@ -357,11 +387,10 @@ class _SectionLabel extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         label,
-        style: TextStyle(
-          color: const Color(0xFF5DCAA5).withValues(alpha: 0.7),
-          fontSize: 12,
+        style: const TextStyle(
+          color: Color(0xFF9FE1CB),
+          fontSize: 14,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
         ),
       ),
     );
@@ -373,7 +402,7 @@ class _ProfileField extends StatelessWidget {
     required this.controller,
     required this.label,
     required this.icon,
-    this.keyboardType,
+    this.keyboardType = TextInputType.text,
     this.validator,
     this.maxLines = 1,
   });
@@ -381,7 +410,7 @@ class _ProfileField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final IconData icon;
-  final TextInputType? keyboardType;
+  final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final int maxLines;
 
@@ -392,42 +421,25 @@ class _ProfileField extends StatelessWidget {
       keyboardType: keyboardType,
       validator: validator,
       maxLines: maxLines,
-      style: const TextStyle(
-        color: Color(0xFFE8FBF4),
-        fontSize: 14,
-      ),
+      style: const TextStyle(color: Colors.white, fontSize: 14),
       decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: const Color(0xFF5DCAA5), size: 20),
         labelText: label,
-        labelStyle: TextStyle(
-          color: const Color(0xFF5DCAA5).withValues(alpha: 0.8),
-          fontSize: 13,
-        ),
-        prefixIcon: Icon(icon,
-            color: const Color(0xFF5DCAA5).withValues(alpha: 0.7), size: 20),
+        labelStyle: const TextStyle(color: Color(0xFF5DCAA5), fontSize: 13),
+        floatingLabelStyle: const TextStyle(color: Color(0xFF9FE1CB)),
         filled: true,
-        fillColor: const Color(0xFF0F6E56).withValues(alpha: 0.15),
+        fillColor: const Color(0xFF0F6E56).withValues(alpha: 0.2),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: const Color(0xFF1D9E75).withValues(alpha: 0.3),
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: const Color(0xFF1D9E75).withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: const Color(0xFF1D9E75).withValues(alpha: 0.3),
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: const Color(0xFF1D9E75).withValues(alpha: 0.3)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: Color(0xFF1D9E75),
-            width: 1.5,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFC62828)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF1D9E75)),
         ),
       ),
     );
