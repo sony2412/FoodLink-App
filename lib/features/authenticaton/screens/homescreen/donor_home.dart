@@ -426,9 +426,7 @@ class _DonorHomePage extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-//  REUSABLE SMALL WIDGETS
-// ─────────────────────────────────────────────
+
 class _ImpactStat extends StatelessWidget {
   final IconData icon;
   final String value;
@@ -653,9 +651,7 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-//  LISTINGS PAGE
-// ─────────────────────────────────────────────
+
 class _DonorListingsPage extends StatelessWidget {
   const _DonorListingsPage();
 
@@ -886,9 +882,7 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-//  HISTORY PAGE
-// ─────────────────────────────────────────────
+
 class _DonorHistoryPage extends StatelessWidget {
   const _DonorHistoryPage();
 

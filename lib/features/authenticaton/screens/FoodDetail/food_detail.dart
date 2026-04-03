@@ -240,9 +240,7 @@ class _DialogStat extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-//  FOOD DETAIL SCREEN
-// ─────────────────────────────────────────────
+
 class FoodDetailScreen extends StatelessWidget {
   const FoodDetailScreen({super.key});
 
@@ -1024,9 +1022,6 @@ class FoodDetailScreen extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-//  REUSABLE WIDGETS
-// ─────────────────────────────────────────────
 
 class _SectionTitle extends StatelessWidget {
   final String title;
