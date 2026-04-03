@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodlink/common/widgets/f_screen_background.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -7,8 +8,6 @@ import '../../../../utils/constants/text_strings.dart';
 import '../NotificationScreen/notification_screen.dart';
 import '../ProfileScreen/profile_screen.dart';
 import '../login/login.dart';
-
-
 
 class VolunteerDashboard extends StatefulWidget {
   const VolunteerDashboard({super.key});
@@ -30,8 +29,10 @@ class _VolunteerDashboardState extends State<VolunteerDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D3D30),
-      body: _tabs[_currentIndex],
+      backgroundColor: Colors.transparent, // Let FScreenBackground show through
+      body: FScreenBackground(
+        child: _tabs[_currentIndex],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF091F17),
@@ -49,8 +50,7 @@ class _VolunteerDashboardState extends State<VolunteerDashboard> {
           elevation: 0,
           type: BottomNavigationBarType.fixed,
           selectedItemColor: const Color(0xFFEF9F27),
-          unselectedItemColor:
-          const Color(0xFF5DCAA5).withValues(alpha: 0.5),
+          unselectedItemColor: const Color(0xFF5DCAA5).withValues(alpha: 0.5),
           selectedLabelStyle: const TextStyle(
               fontSize: 11, fontWeight: FontWeight.w600),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
@@ -676,7 +676,7 @@ class _ProfileTab extends StatelessWidget {
             const SizedBox(height: 24),
 
             _MenuSection(title: 'Account', items: [
-              _MenuItem(icon: Iconsax.user, label: FTexts.editProfile, onTap: () => Get.to(() => const EditProfileScreen(role: 'volunteer'))),
+              _MenuItem(icon: Iconsax.user, label: FTexts.editProfile, onTap: () => Get.to(() => EditProfileScreen(role: 'volunteer'))),
               _MenuItem(icon: Iconsax.truck, label: FTexts.deliveryHistory, onTap: () {}),
               _MenuItem(icon: Iconsax.notification, label: FTexts.notificationSettings, onTap: () => Get.to(() => const NotificationsScreen())),
             ]),
@@ -733,7 +733,7 @@ class _TaskCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F6E56).withValues(alpha: 0.12),
+        color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFF1D9E75).withValues(alpha: 0.2),
@@ -879,7 +879,7 @@ class _DeliveryHistoryCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F6E56).withValues(alpha: 0.12),
+        color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFF1D9E75).withValues(alpha: 0.2),
@@ -1079,8 +1079,6 @@ class _SmallStatCard extends StatelessWidget {
     );
   }
 }
-
-// Shared widgets (same as recipient)
 
 class _Tag extends StatelessWidget {
   const _Tag({required this.icon, required this.label});

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodlink/common/widgets/f_screen_background.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import '../FindNGO/find_ngo.dart';
@@ -6,7 +7,6 @@ import '../NotificationScreen/notification_screen.dart';
 import '../PostFood/post_food.dart';
 import '../ProfileScreen/profile_screen.dart';
 import '../login/login.dart';
-
 
 class DonorDashboard extends StatefulWidget {
   const DonorDashboard({super.key});
@@ -28,8 +28,10 @@ class _DonorDashboardState extends State<DonorDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A2E22),
-      body: _pages[_currentIndex],
+      backgroundColor: Colors.transparent, // Let FScreenBackground show through
+      body: FScreenBackground(
+        child: _pages[_currentIndex],
+      ),
       bottomNavigationBar: _DonorBottomNav(
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
@@ -137,52 +139,17 @@ class _DonorHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Ambient blobs
-        Positioned(
-          top: -60,
-          left: -60,
-          child: Container(
-            width: 220,
-            height: 220,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [
-                const Color(0xFF0F6E56).withValues(alpha: 0.35),
-                Colors.transparent,
-              ]),
-            ),
-          ),
-        ),
-        Positioned(
-          top: 120,
-          right: -40,
-          child: Container(
-            width: 160,
-            height: 160,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [
-                const Color(0xFFBA7517).withValues(alpha: 0.2),
-                Colors.transparent,
-              ]),
-            ),
-          ),
-        ),
-        SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: _buildHeader()),
-              SliverToBoxAdapter(child: _buildImpactStats()),
-              SliverToBoxAdapter(child: _buildQuickActions()),
-              SliverToBoxAdapter(child: _buildActiveListings()),
-              SliverToBoxAdapter(child: _buildNearbyRecipients()),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            ],
-          ),
-        ),
-      ],
+    return SafeArea(
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildHeader()),
+          SliverToBoxAdapter(child: _buildImpactStats()),
+          SliverToBoxAdapter(child: _buildQuickActions()),
+          SliverToBoxAdapter(child: _buildActiveListings()),
+          SliverToBoxAdapter(child: _buildNearbyRecipients()),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
     );
   }
 
@@ -427,7 +394,6 @@ class _DonorHomePage extends StatelessWidget {
   }
 }
 
-
 class _ImpactStat extends StatelessWidget {
   final IconData icon;
   final String value;
@@ -471,7 +437,7 @@ class _QuickActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F2E20),
+          color: const Color(0xFF0F2E20).withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
@@ -515,7 +481,7 @@ class _ListingCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F2E20),
+        color: const Color(0xFF0F2E20).withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.2)),
       ),
@@ -582,7 +548,7 @@ class _RecipientCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F2E20),
+        color: const Color(0xFF0F2E20).withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.2)),
       ),
@@ -635,7 +601,7 @@ class _EmptyState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F2E20),
+        color: const Color(0xFF0F2E20).withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.15)),
       ),
@@ -652,7 +618,6 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-
 class _DonorListingsPage extends StatelessWidget {
   const _DonorListingsPage();
 
@@ -661,77 +626,61 @@ class _DonorListingsPage extends StatelessWidget {
     final tabs = ['Active', 'Claimed', 'Expired'];
     return DefaultTabController(
       length: 3,
-      child: Stack(
-        children: [
-          Positioned(
-            top: -60, left: -60,
-            child: Container(
-              width: 200, height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  const Color(0xFF0F6E56).withValues(alpha: 0.3), Colors.transparent,
-                ]),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('My Listings',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF9FE1CB))),
+                  GestureDetector(
+                    onTap: ()  => Get.to(() => const PostFoodScreen()),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEF9F27), Color(0xFFBA7517)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Iconsax.add, color: Colors.white, size: 16),
+                          SizedBox(width: 4),
+                          Text('Post Food', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('My Listings',
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF9FE1CB))),
-                      GestureDetector(
-                        onTap: ()  => Get.to(() => const PostFoodScreen()),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFEF9F27), Color(0xFFBA7517)],
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Iconsax.add, color: Colors.white, size: 16),
-                              SizedBox(width: 4),
-                              Text('Post Food', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                TabBar(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  labelColor: const Color(0xFF5DCAA5),
-                  unselectedLabelColor: const Color(0xFF5DCAA5).withValues(alpha: 0.4),
-                  indicatorColor: const Color(0xFF5DCAA5),
-                  indicatorSize: TabBarIndicatorSize.label,
-                  labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  dividerColor: Colors.transparent,
-                  tabs: tabs.map((t) => Tab(text: t)).toList(),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      _ListingsTabContent(status: 'Active'),
-                      _ListingsTabContent(status: 'Claimed'),
-                      _ListingsTabContent(status: 'Expired'),
-                    ],
-                  ),
-                ),
-              ],
+            TabBar(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              labelColor: const Color(0xFF5DCAA5),
+              unselectedLabelColor: const Color(0xFF5DCAA5).withValues(alpha: 0.4),
+              indicatorColor: const Color(0xFF5DCAA5),
+              indicatorSize: TabBarIndicatorSize.label,
+              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              dividerColor: Colors.transparent,
+              tabs: tabs.map((t) => Tab(text: t)).toList(),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _ListingsTabContent(status: 'Active'),
+                  _ListingsTabContent(status: 'Claimed'),
+                  _ListingsTabContent(status: 'Expired'),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -774,7 +723,7 @@ class _ListingsTabContent extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F2E20),
+            color: const Color(0xFF0F2E20).withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.2)),
           ),
@@ -883,7 +832,6 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
-
 class _DonorHistoryPage extends StatelessWidget {
   const _DonorHistoryPage();
 
@@ -896,118 +844,102 @@ class _DonorHistoryPage extends StatelessWidget {
       {'title': 'Roti & Sabzi', 'qty': '6 kg', 'date': 'Mar 22, 2026', 'meals': '24', 'recipient': 'Individual'},
     ];
 
-    return Stack(
-      children: [
-        Positioned(
-          bottom: 80, right: -40,
-          child: Container(
-            width: 160, height: 160,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [
-                const Color(0xFFBA7517).withValues(alpha: 0.2), Colors.transparent,
-              ]),
+    return SafeArea(
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              child: const Text('Donation History',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF9FE1CB))),
             ),
           ),
-        ),
-        SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                  child: const Text('Donation History',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF9FE1CB))),
+          // Monthly summary card
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F2E20).withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _HistoryStat(value: '142', label: 'Total Meals'),
+                    _HistoryStat(value: '68 kg', label: 'Food Saved'),
+                    _HistoryStat(value: '31', label: 'Families'),
+                  ],
                 ),
               ),
-              // Monthly summary card
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+              child: Text('Past Donations',
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF9FE1CB))),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (ctx, i) {
+                final h = history[i];
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
                   child: Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F2E20),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.25)),
+                      color: const Color(0xFF0F2E20).withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.15)),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _HistoryStat(value: '142', label: 'Total Meals'),
-                        _HistoryStat(value: '68 kg', label: 'Food Saved'),
-                        _HistoryStat(value: '31', label: 'Families'),
+                        Container(
+                          width: 44, height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1D9E75).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Iconsax.tick_circle, color: Color(0xFF5DCAA5), size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(h['title'] as String,
+                                  style: const TextStyle(color: Color(0xFF9FE1CB), fontSize: 13, fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 3),
+                              Text('${h['qty']} → ${h['recipient']}',
+                                  style: TextStyle(color: const Color(0xFF5DCAA5).withValues(alpha: 0.7), fontSize: 11)),
+                              Text(h['date'] as String,
+                                  style: TextStyle(color: const Color(0xFF5DCAA5).withValues(alpha: 0.5), fontSize: 10)),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text('${h['meals']}',
+                                style: const TextStyle(color: Color(0xFFEF9F27), fontSize: 16, fontWeight: FontWeight.w700)),
+                            const Text('meals', style: TextStyle(color: Color(0xFFEF9F27), fontSize: 10)),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                  child: Text('Past Donations',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF9FE1CB))),
-                ),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (ctx, i) {
-                    final h = history[i];
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F2E20),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.15)),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44, height: 44,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1D9E75).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(Iconsax.tick_circle, color: Color(0xFF5DCAA5), size: 20),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(h['title'] as String,
-                                      style: const TextStyle(color: Color(0xFF9FE1CB), fontSize: 13, fontWeight: FontWeight.w600)),
-                                  const SizedBox(height: 3),
-                                  Text('${h['qty']} → ${h['recipient']}',
-                                      style: TextStyle(color: const Color(0xFF5DCAA5).withValues(alpha: 0.7), fontSize: 11)),
-                                  Text(h['date'] as String,
-                                      style: TextStyle(color: const Color(0xFF5DCAA5).withValues(alpha: 0.5), fontSize: 10)),
-                                ],
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text('${h['meals']}',
-                                    style: const TextStyle(color: Color(0xFFEF9F27), fontSize: 16, fontWeight: FontWeight.w700)),
-                                const Text('meals', style: TextStyle(color: Color(0xFFEF9F27), fontSize: 10)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                  childCount: history.length,
-                ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            ],
+                );
+              },
+              childCount: history.length,
+            ),
           ),
-        ),
-      ],
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
     );
   }
 }
@@ -1029,96 +961,77 @@ class _HistoryStat extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-//  PROFILE PAGE
-// ─────────────────────────────────────────────
 class _DonorProfilePage extends StatelessWidget {
   const _DonorProfilePage();
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: -60, left: -60,
-          child: Container(
-            width: 200, height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [
-                const Color(0xFF0F6E56).withValues(alpha: 0.3), Colors.transparent,
-              ]),
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            // Avatar + name
+            Container(
+              width: 72, height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1D9E75), Color(0xFF0F6E56)],
+                ),
+              ),
+              child: const Center(
+                child: Text('R', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28)),
+              ),
             ),
-          ),
-        ),
-        SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                const SizedBox(height: 8),
-                // Avatar + name
-                Container(
-                  width: 72, height: 72,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1D9E75), Color(0xFF0F6E56)],
-                    ),
-                  ),
-                  child: const Center(
-                    child: Text('R', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text('Rahul\'s Kitchen',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF9FE1CB))),
-                const SizedBox(height: 4),
-                Text('Food Donor', style: TextStyle(color: const Color(0xFF5DCAA5).withValues(alpha: 0.7), fontSize: 13)),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF9F27).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFEF9F27).withValues(alpha: 0.4)),
-                  ),
-                  child: const Text('⭐ Top Donor', style: TextStyle(color: Color(0xFFEF9F27), fontSize: 11, fontWeight: FontWeight.w600)),
-                ),
-                const SizedBox(height: 24),
-                // Profile options
-                _ProfileOption(icon: Iconsax.user_edit, label: 'Edit Profile', onTap: () => Get.to(() => EditProfileScreen(role: 'donor'))),
-                _ProfileOption(icon: Iconsax.notification, label: 'Notifications', onTap: () => Get.to(() => const NotificationsScreen())),
-                _ProfileOption(icon: Iconsax.location, label: 'My Location', onTap: () {}),
-                _ProfileOption(icon: Iconsax.security, label: 'Privacy & Security', onTap: () {}),
-                _ProfileOption(icon: Iconsax.info_circle, label: 'About FoodLink', onTap: () {}),
-                const SizedBox(height: 8),
-                // Logout
-                GestureDetector(
-                  onTap: () => Get.offAll(() => const LoginScreen()),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Iconsax.logout, color: Colors.redAccent, size: 18),
-                        SizedBox(width: 8),
-                        Text('Log Out', style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 12),
+            const Text('Rahul\'s Kitchen',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF9FE1CB))),
+            const SizedBox(height: 4),
+            Text('Food Donor', style: TextStyle(color: const Color(0xFF5DCAA5).withValues(alpha: 0.7), fontSize: 13)),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF9F27).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFEF9F27).withValues(alpha: 0.4)),
+              ),
+              child: const Text('⭐ Top Donor', style: TextStyle(color: Color(0xFFEF9F27), fontSize: 11, fontWeight: FontWeight.w600)),
             ),
-          ),
+            const SizedBox(height: 24),
+            // Profile options
+            _ProfileOption(icon: Iconsax.user_edit, label: 'Edit Profile', onTap: () => Get.to(() => EditProfileScreen(role: 'donor'))),
+            _ProfileOption(icon: Iconsax.notification, label: 'Notifications', onTap: () => Get.to(() => const NotificationsScreen())),
+            _ProfileOption(icon: Iconsax.location, label: 'My Location', onTap: () {}),
+            _ProfileOption(icon: Iconsax.security, label: 'Privacy & Security', onTap: () {}),
+            _ProfileOption(icon: Iconsax.info_circle, label: 'About FoodLink', onTap: () {}),
+            const SizedBox(height: 8),
+            // Logout
+            GestureDetector(
+              onTap: () => Get.offAll(() => const LoginScreen()),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Iconsax.logout, color: Colors.redAccent, size: 18),
+                    SizedBox(width: 8),
+                    Text('Log Out', style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -1138,7 +1051,7 @@ class _ProfileOption extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F2E20),
+          color: const Color(0xFF0F2E20).withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.15)),
         ),

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:foodlink/common/widgets/f_text_field.dart';
-import 'package:foodlink/features/authenticaton/controllers/signup_controller.dart';
+import 'package:foodlink/features/authenticaton/screens/SignUP/sign_up_controller.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-
 import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/constants/text_strings.dart';
 import '../../../../utils/validation/validator.dart';

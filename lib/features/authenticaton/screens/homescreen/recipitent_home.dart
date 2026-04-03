@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodlink/common/widgets/f_screen_background.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -9,7 +10,6 @@ import '../NotificationScreen/notification_screen.dart';
 import '../ProfileScreen/profile_screen.dart';
 import '../TrackDelivery/track_delivery.dart';
 import '../login/login.dart';
-
 
 class RecipientDashboard extends StatefulWidget {
   const RecipientDashboard({super.key});
@@ -31,8 +31,10 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D3D30),
-      body: _tabs[_currentIndex],
+      backgroundColor: Colors.transparent, // Let FScreenBackground show through
+      body: FScreenBackground(
+        child: _tabs[_currentIndex],
+      ),
       bottomNavigationBar: _buildBottomNav(),
     );
   }
@@ -138,7 +140,7 @@ class _HomeTab extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F6E56).withValues(alpha: 0.2),
+                  color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: const Color(0xFF1D9E75).withValues(alpha: 0.3),
@@ -460,7 +462,7 @@ class _BrowseTabState extends State<_BrowseTab>
                 Container(
                   margin: const EdgeInsets.all(FSizzes.defaultSpace),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F6E56).withValues(alpha: 0.2),
+                    color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: const Color(0xFF1D9E75).withValues(alpha: 0.3),
@@ -824,7 +826,7 @@ class _FoodCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F6E56).withValues(alpha: 0.12),
+          color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isUrgent
@@ -978,7 +980,7 @@ class _ClaimCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F6E56).withValues(alpha: 0.12),
+        color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFF1D9E75).withValues(alpha: 0.2),
