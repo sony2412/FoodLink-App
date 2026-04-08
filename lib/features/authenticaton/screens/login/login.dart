@@ -23,7 +23,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(LoginController());
-    final String role = Get.arguments ?? 'donor';
+    final String role = Get.arguments ?? 'recipient';
     final dark = FHelperFunctions.isDarkMode(context);
 
     return FScreenBackground(
