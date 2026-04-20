@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../../../utils/constants/sizes.dart';
-import '../../../../utils/constants/text_strings.dart';
 import '../SignUP/signUp.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
@@ -138,7 +137,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   Expanded(
                     child: ListView.separated(
                       itemCount: roles.length,
-                      separatorBuilder: (_, __) =>
+                      separatorBuilder: (_, _) =>
                       const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final role = roles[index];
@@ -318,35 +317,38 @@ class _RoleCard extends StatelessWidget {
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(width: 8),
 
                       /// Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFFEF9F27).withValues(alpha: 0.20)
-                              : const Color(0xFF1D9E75).withValues(alpha: 0.15),
-                          border: Border.all(
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
                             color: isSelected
-                                ? const Color(0xFFEF9F27)
-                                .withValues(alpha: 0.55)
-                                : const Color(0xFF1D9E75)
-                                .withValues(alpha: 0.3),
+                                ? const Color(0xFFEF9F27).withValues(alpha: 0.20)
+                                : const Color(0xFF1D9E75).withValues(alpha: 0.15),
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFFEF9F27)
+                                  .withValues(alpha: 0.55)
+                                  : const Color(0xFF1D9E75)
+                                  .withValues(alpha: 0.3),
+                            ),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          badge,
-                          style: TextStyle(
-                            color: isSelected
-                                ? const Color(0xFFFAC775)
-                                : const Color(0xFF5DCAA5),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.2,
+                          child: Text(
+                            badge,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFFFAC775)
+                                  : const Color(0xFF5DCAA5),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.2,
+                            ),
                           ),
                         ),
                       ),
@@ -355,6 +357,8 @@ class _RoleCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: const Color(0xFF5DCAA5).withValues(alpha: 0.7),
                       fontSize: 12,

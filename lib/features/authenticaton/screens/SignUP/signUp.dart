@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:foodlink/common/SignUp_Login/form_divider.dart';
+import 'package:foodlink/common/widgets/f_screen_background.dart';
+import 'package:foodlink/features/authenticaton/screens/login/login.dart';
+import 'package:foodlink/features/authenticaton/screens/signup/SignUpWidget.dart';
+import 'package:foodlink/utils/constants/image_strings.dart';
+import 'package:foodlink/utils/constants/sizes.dart';
+import 'package:foodlink/utils/constants/text_strings.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../../../../../common/SignUp_Login/form_divider.dart';
 import '../../../../../common/SignUp_Login/social_button.dart';
-import '../../../../../utils/constants/image_strings.dart';
-import '../../../../../utils/constants/sizes.dart';
-import '../../../../../utils/constants/text_strings.dart';
-import '../login/login.dart';
-import 'SignUpWidget.dart';
-import 'widgets/signup_form_widget.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key, required this.role});
@@ -18,95 +18,58 @@ class SignUpScreen extends StatelessWidget {
 
   String get roleLabel {
     switch (role) {
-      case 'donor':     return FTexts.roleDonor;
-      case 'recipient': return FTexts.roleRecipient;
-      case 'volunteer': return FTexts.roleVolunteer;
-      default:          return FTexts.register;
+      case 'donor':
+        return FTexts.roleDonor;
+      case 'recipient':
+        return FTexts.roleRecipient;
+      case 'volunteer':
+        return FTexts.roleVolunteer;
+      default:
+        return FTexts.register;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D3D30),
-      body: SingleChildScrollView(
-        child: Stack(
-          children: [
-        
-            /// Ambient blob — top left
-            Positioned(
-              top: -80, left: -80,
-              child: Container(
-                width: 260, height: 260,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [
-                    const Color(0xFF0F6E56).withValues(alpha: 0.35),
-                    Colors.transparent,
-                  ]),
+    return FScreenBackground(
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(FSizzes.defaultSpace),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// Header — logo + title + subtitle + role badge
+                _SignupHeader(roleLabel: roleLabel),
+
+                /// Form
+                const SignUpFormWidget(),
+
+                /// Divider
+                FormDivider(
+                  dividerText: FTexts.orSignInWith.capitalize!,
                 ),
-              ),
-            ),
-        
-            /// Ambient blob — bottom right
-            Positioned(
-              bottom: 100, right: -60,
-              child: Container(
-                width: 200, height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [
-                    const Color(0xFFBA7517).withValues(alpha: 0.30),
-                    Colors.transparent,
-                  ]),
-                ),
-              ),
-            ),
-        
-            /// Main content
-            SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(FSizzes.defaultSpace),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-        
-                      /// Header — logo + title + subtitle + role badge
-                      _SignupHeader(roleLabel: roleLabel),
-        
-                      /// Form
-                      const SignUpFormWidget(),
-        
-                      /// Divider
-                      FormDivider(
-                        dividerText: FTexts.orSignInWith.capitalize!,
-                      ),
-                      const SizedBox(height: FSizzes.spaceBtwSections),
-        
-                      /// Social footer
-                      _SignupSocialFooter(
-                        text1: FTexts.alreadyHaveAccount
-                            .split('?')
-                            .first + '? ',
-                        text2: FTexts.signIn,
-                        onPressed: () => Get.off(() => const LoginScreen()),
-                      ),
-        
-                      const SizedBox(height: FSizzes.spaceBtwSections),
-                    ],
+                const SizedBox(height: FSizzes.spaceBtwSections),
+
+                /// Social footer
+                _SignupSocialFooter(
+                  text1: '${FTexts.alreadyHaveAccount.split('?').first}? ',
+                  text2: FTexts.signIn,
+                  onPressed: () => Get.off(
+                    () => const LoginScreen(),
+                    arguments: role,
                   ),
                 ),
-              ),
+
+                const SizedBox(height: FSizzes.spaceBtwSections),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
-
-// ── Header widget ─────────────────────────────────────────────────────────────
 
 class _SignupHeader extends StatelessWidget {
   const _SignupHeader({required this.roleLabel});
@@ -118,7 +81,6 @@ class _SignupHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         /// Logo
         Center(
           child: Image.asset(
@@ -159,13 +121,11 @@ class _SignupHeader extends StatelessWidget {
               style: TextStyle(color: Color(0xFF5DCAA5), fontSize: 13),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(0xFFEF9F27).withValues(alpha: 0.15),
                 border: Border.all(
-                    color:
-                    const Color(0xFFEF9F27).withValues(alpha: 0.5)),
+                    color: const Color(0xFFEF9F27).withValues(alpha: 0.5)),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -184,8 +144,6 @@ class _SignupHeader extends StatelessWidget {
   }
 }
 
-// ── Social footer ─────────────────────────────────────────────────────────────
-
 class _SignupSocialFooter extends StatelessWidget {
   const _SignupSocialFooter({
     required this.text1,
@@ -201,7 +159,6 @@ class _SignupSocialFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-
         /// Social buttons row
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -233,8 +190,7 @@ class _SignupSocialFooter extends StatelessWidget {
           children: [
             Text(
               text1,
-              style: const TextStyle(
-                  color: Color(0xFF5DCAA5), fontSize: 13),
+              style: const TextStyle(color: Color(0xFF5DCAA5), fontSize: 13),
             ),
             GestureDetector(
               onTap: onPressed,

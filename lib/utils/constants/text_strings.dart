@@ -58,6 +58,7 @@ class FTexts {
   static const String registerSuccess = "Account created successfully!";
   static const String passwordResetSent = "Password reset link sent to your email.";
   static const String signingIn = "Signing In...";
+  static const String Continue = "Continue";
 
   // ── Login Screen ──────────────────────────────────────────────
   static const String loginTitle = "Welcome Back";
@@ -74,6 +75,8 @@ class FTexts {
   static const String forgotPasswordEmail = "Registered Email";
   static const String forgotPasswordBtn = "Send Reset Link";
   static const String forgotPasswordSent = "Reset link sent! Check your inbox.";
+  static const String changeYourPasswordTitle = "Reset Your Password";
+  static const String changeYourPasswordSubTitle = "Make sure your new password is safe and easy to remember";
 
   // ── Email Verification ────────────────────────────────────────
   static const String confirmEmail = "Verify your email address";

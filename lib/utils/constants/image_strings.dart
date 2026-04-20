@@ -21,6 +21,7 @@ class FImages {
   static const String confirmation = "assets/images/gifs/Confirmed.gif";
   static const String community = "assets/images/gifs/Community.gif";
   static const String apple = "assets/images/img/apple_logo.png";
-
+  static const String Verified = "assets/images/gifs/Verified.gif";
+  static const String Delivered = "assets/images/img/delivered.png";
 
 }

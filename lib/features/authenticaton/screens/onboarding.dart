@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:foodlink/utils/constants/colors.dart';
 import 'package:foodlink/utils/constants/image_strings.dart';
 import 'package:foodlink/utils/constants/text_strings.dart';
 import 'package:foodlink/utils/device/device_utility.dart';
