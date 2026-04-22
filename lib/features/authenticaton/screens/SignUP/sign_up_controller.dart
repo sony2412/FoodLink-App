@@ -1,81 +1,55 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../emailVerification/verify_email.dart';
 
 class SignUpController extends GetxController {
   static SignUpController get instance => Get.find();
 
-  /// Form key
-  final signupFormKey = GlobalKey<FormState>();
+  final _auth = FirebaseAuth.instance;
+  final _db = FirebaseFirestore.instance;
 
-  /// Text controllers
-  final fullName        = TextEditingController();
-  final email           = TextEditingController();
-  final phoneNumber     = TextEditingController();
-  final password        = TextEditingController();
+  final signupFormKey = GlobalKey<FormState>();
+  final fullName = TextEditingController();
+  final email = TextEditingController();
+  final phoneNumber = TextEditingController();
+  final password = TextEditingController();
   final confirmPassword = TextEditingController();
 
-  /// Reactive toggles & loading states
-  final hidePassword        = true.obs;
+  final hidePassword = true.obs;
   final hideConfirmPassword = true.obs;
-  final isLoading           = false.obs;
-  final isGoogleLoading     = false.obs;
-  final isFacebookLoading   = false.obs;
+  final isLoading = false.obs;
 
-  /// Main signup method
-  Future<void> signup() async {
-    if (!signupFormKey.currentState!.validate()) return;
-
+  Future<void> signup(String role) async {
     try {
+      if (!signupFormKey.currentState!.validate()) return;
       isLoading.value = true;
 
-      // TODO: replace with your auth call e.g. Firebase
-      // await AuthenticationRepository.instance
-      //     .registerWithEmailAndPassword(email.text.trim(), password.text.trim());
-
-      await Future.delayed(const Duration(seconds: 2)); // placeholder
-
-      isLoading.value = false;
-
-
-      Get.offAll(() => const VerifyEmailScreen());
-
-    } catch (e) {
-      isLoading.value = false;
-      Get.snackbar(
-        'Sign Up Failed',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFC62828),
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 12,
+      // 1. Create Auth Account
+      // Firebase will handle the registration. 
+      // Testing email like "+1@gmail.com" might be blocked if 'Email enumeration protection' is ON in Firebase Console.
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email.text.trim(),
+        password: password.text.trim(),
       );
-    }
-  }
 
-  /// Google signup
-  Future<void> googleSignUp() async {
-    try {
-      isGoogleLoading.value = true;
-      // TODO: Google auth
-      await Future.delayed(const Duration(seconds: 1));
-      isGoogleLoading.value = false;
-    } catch (e) {
-      isGoogleLoading.value = false;
-    }
-  }
+      // 2. We store a temporary "Pending" state or just hold off on specific features.
+      // Standard practice: Add user to DB but with 'isVerified: false'
+      await _db.collection("Users").doc(userCredential.user!.uid).set({
+        'FullName': fullName.text.trim(),
+        'Email': email.text.trim().toLowerCase(),
+        'PhoneNumber': phoneNumber.text.trim(),
+        'Role': role.toLowerCase(),
+        'isVerified': false, // NEW: track verification status
+        'CreatedAt': FieldValue.serverTimestamp(),
+      });
 
-  /// Facebook signup
-  Future<void> facebookSignUp() async {
-    try {
-      isFacebookLoading.value = true;
-      // TODO: Facebook auth
-      await Future.delayed(const Duration(seconds: 1));
-      isFacebookLoading.value = false;
+      isLoading.value = false;
+      Get.to(() => const VerifyEmailScreen());
     } catch (e) {
-      isFacebookLoading.value = false;
+      isLoading.value = false;
+      Get.snackbar('Registration Failed', e.toString(), backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 

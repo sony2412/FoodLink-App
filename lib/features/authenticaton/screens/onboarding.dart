@@ -200,95 +200,98 @@ class OnBoardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(FSizzes.defaultSpace),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(height: FDeviceUtility.getAppBarHeight() - 10),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(32),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0F6E56), Color(0xFF1D9E75)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              border: Border.all(
-                color: const Color(0xFF1D9E75).withOpacity(0.3),
-              ),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: [
-                Image(
-                  width: FHelperFunctions.screenWidth() * 0.85,
-                  height: FHelperFunctions.screenHeight() * 0.42,
-                  image: AssetImage(image),
-                  fit: BoxFit.cover,
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(FSizzes.defaultSpace),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: FDeviceUtility.getAppBarHeight() - 10),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(32),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0F6E56), Color(0xFF1D9E75)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.white.withOpacity(0.05),
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.45),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        stops: const [0.0, 0.5, 1.0],
+                border: Border.all(
+                  color: const Color(0xFF1D9E75).withOpacity(0.3),
+                ),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                children: [
+                  Image(
+                    width: FHelperFunctions.screenWidth() * 0.85,
+                    height: FHelperFunctions.screenHeight() * 0.42,
+                    image: AssetImage(image),
+                    fit: BoxFit.cover,
+                  ),
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.white.withOpacity(0.05),
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.45),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          stops: const [0.0, 0.5, 1.0],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  bottom: 14,
-                  left: 14,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF9F27).withOpacity(0.20),
-                      border: Border.all(
-                        color: const Color(0xFFEF9F27).withOpacity(0.55),
+                  Positioned(
+                    bottom: 14,
+                    left: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF9F27).withOpacity(0.20),
+                        border: Border.all(
+                          color: const Color(0xFFEF9F27).withOpacity(0.55),
+                        ),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      badgeLabel,
-                      style: TextStyle(
-                        color: Color(0xFFFAC775),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
+                      child: Text(
+                        badgeLabel,
+                        style: const TextStyle(
+                          color: Color(0xFFFAC775),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: const Color(0xFF9FE1CB),
-              fontWeight: FontWeight.w700,
-              height: 1.25,
+            const SizedBox(height: 28),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: const Color(0xFF9FE1CB),
+                fontWeight: FontWeight.w700,
+                height: 1.25,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: FSizzes.spaceBtwItems),
-          Text(
-            subtTitle,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: const Color(0xFF5DCAA5),
-              height: 1.65,
+            const SizedBox(height: FSizzes.spaceBtwItems),
+            Text(
+              subtTitle,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFF5DCAA5),
+                height: 1.65,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            const SizedBox(height: 100), // Spacing for bottom controls
+          ],
+        ),
       ),
     );
   }

@@ -8,7 +8,9 @@ import '../../../../utils/constants/text_strings.dart';
 import '../../../../utils/validation/validator.dart';
 
 class SignUpFormWidget extends StatelessWidget {
-  const SignUpFormWidget({super.key});
+  const SignUpFormWidget({super.key, required this.role});
+
+  final String role;
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +108,7 @@ class SignUpFormWidget extends StatelessWidget {
                 () => GestureDetector(
                   onTap: controller.isLoading.value
                       ? null
-                      : () => controller.signup(),
+                      : () => controller.signup(role),
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),

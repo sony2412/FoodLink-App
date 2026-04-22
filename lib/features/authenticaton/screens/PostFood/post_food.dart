@@ -1,13 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:foodlink/common/widgets/f_screen_background.dart';
 import 'package:foodlink/common/widgets/f_text_field.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import '../../controllers/user_controller.dart';
 
 class PostFoodController extends GetxController {
   static PostFoodController get instance => Get.find();
 
   final formKey = GlobalKey<FormState>();
+  final _db = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
 
   // Text controllers
   final foodName = TextEditingController();
@@ -20,28 +27,17 @@ class PostFoodController extends GetxController {
   final selectedCategory = ''.obs;
   final selectedUnit = 'kg'.obs;
   final selectedDietaryType = ''.obs;
-  final selectedDeliveryOption = 'self_pickup'.obs; // 'self_pickup' | 'volunteer' | 'both'
+  final selectedDeliveryOption = 'self_pickup'.obs;
   final expiryDate = Rxn<DateTime>();
   final pickupFrom = Rxn<TimeOfDay>();
   final pickupTo = Rxn<TimeOfDay>();
-  final selectedImages = <String>[].obs; // Will hold image paths
+  final selectedImages = <String>[].obs;
   final isLoading = false.obs;
-  final currentStep = 0.obs; // For multi-step form: 0=basic, 1=details, 2=pickup
+  final isLocationLoading = false.obs;
 
   // Options
-  final categories = [
-    'Cooked Food',
-    'Raw Ingredients',
-    'Bakery',
-    'Dairy',
-    'Fruits & Vegetables',
-    'Packaged Food',
-    'Beverages',
-    'Other',
-  ];
-
+  final categories = ['Cooked Food', 'Raw Ingredients', 'Bakery', 'Dairy', 'Fruits & Vegetables', 'Packaged Food', 'Beverages', 'Other'];
   final units = ['kg', 'grams', 'litres', 'ml', 'plates', 'boxes', 'packets', 'pieces', 'servings'];
-
   final dietaryTypes = ['Vegetarian', 'Non-Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free'];
 
   String get formattedExpiryDate {
@@ -61,147 +57,113 @@ class PostFoodController extends GetxController {
       initialDate: DateTime.now().add(const Duration(hours: 2)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 7)),
-      builder: (ctx, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF1D9E75),
-            onPrimary: Colors.white,
-            surface: Color(0xFF0D3D30),
-            onSurface: Color(0xFF9FE1CB),
-          ),
-        ),
-        child: child!,
-      ),
     );
     if (date == null) return;
-    final time = await showTimePicker(
-      context: Get.context!,
-      initialTime: TimeOfDay.now(),
-      builder: (ctx, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF1D9E75),
-            onPrimary: Colors.white,
-            surface: Color(0xFF0D3D30),
-            onSurface: Color(0xFF9FE1CB),
-          ),
-        ),
-        child: child!,
-      ),
-    );
+    final time = await showTimePicker(context: Get.context!, initialTime: TimeOfDay.now());
     if (time == null) return;
     expiryDate.value = DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
   Future<void> pickTimeWindow() async {
-    final from = await showTimePicker(
-      context: Get.context!,
-      initialTime: const TimeOfDay(hour: 9, minute: 0),
-      helpText: 'Pickup FROM',
-      builder: (ctx, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF1D9E75),
-            onPrimary: Colors.white,
-            surface: Color(0xFF0D3D30),
-            onSurface: Color(0xFF9FE1CB),
-          ),
-        ),
-        child: child!,
-      ),
-    );
+    final from = await showTimePicker(context: Get.context!, initialTime: const TimeOfDay(hour: 9, minute: 0), helpText: 'Pickup FROM');
     if (from == null) return;
-    final to = await showTimePicker(
-      context: Get.context!,
-      initialTime: TimeOfDay(hour: from.hour + 2, minute: from.minute),
-      helpText: 'Pickup TO',
-      builder: (ctx, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF1D9E75),
-            onPrimary: Colors.white,
-            surface: Color(0xFF0D3D30),
-            onSurface: Color(0xFF9FE1CB),
-          ),
-        ),
-        child: child!,
-      ),
-    );
+    final to = await showTimePicker(context: Get.context!, initialTime: TimeOfDay(hour: from.hour + 2, minute: from.minute), helpText: 'Pickup TO');
     if (to == null) return;
     pickupFrom.value = from;
     pickupTo.value = to;
   }
 
-  bool validateAndSubmit() {
-    if (!formKey.currentState!.validate()) return false;
-    if (selectedCategory.value.isEmpty) {
-      Get.snackbar('Missing Field', 'Please select a food category',
-          backgroundColor: const Color(0xFF0D3D30),
-          colorText: const Color(0xFF9FE1CB));
-      return false;
+  /// TRACK CURRENT LOCATION LOGIC
+  Future<void> getCurrentLocation() async {
+    try {
+      isLocationLoading.value = true;
+
+      // 1. Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        isLocationLoading.value = false;
+        Get.snackbar('Location Disabled', 'Please enable location services in your settings.',
+            backgroundColor: Colors.orange, colorText: Colors.white);
+        return;
+      }
+
+      // 2. Check & Request Permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          isLocationLoading.value = false;
+          Get.snackbar('Permission Denied', 'Location permissions are required to auto-fill address.',
+              backgroundColor: Colors.orange, colorText: Colors.white);
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        isLocationLoading.value = false;
+        Get.snackbar('Permission Restricted', 'Location permissions are permanently denied. Please enable them in settings.',
+            backgroundColor: Colors.orange, colorText: Colors.white);
+        return;
+      }
+
+      // 3. Get Coordinates
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+      // 4. Reverse Geocode (Convert Lat/Long to Address)
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        // Construct readable address
+        String address = "${place.name}, ${place.subLocality}, ${place.locality}, ${place.postalCode}";
+        pickupLocation.text = address.replaceAll("null,", "").replaceAll(", null", "");
+      }
+
+      isLocationLoading.value = false;
+      Get.snackbar('Location Updated', 'Current address has been filled.',
+          backgroundColor: Colors.green, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+
+    } catch (e) {
+      isLocationLoading.value = false;
+      Get.snackbar('Error', 'Could not fetch location: $e', backgroundColor: Colors.red, colorText: Colors.white);
     }
-    if (selectedDietaryType.value.isEmpty) {
-      Get.snackbar('Missing Field', 'Please select dietary type',
-          backgroundColor: const Color(0xFF0D3D30),
-          colorText: const Color(0xFF9FE1CB));
-      return false;
-    }
-    if (expiryDate.value == null) {
-      Get.snackbar('Missing Field', 'Please set expiry date & time',
-          backgroundColor: const Color(0xFF0D3D30),
-          colorText: const Color(0xFF9FE1CB));
-      return false;
-    }
-    if (pickupFrom.value == null || pickupTo.value == null) {
-      Get.snackbar('Missing Field', 'Please set pickup time window',
-          backgroundColor: const Color(0xFF0D3D30),
-          colorText: const Color(0xFF9FE1CB));
-      return false;
-    }
-    return true;
   }
 
   Future<void> submitListing() async {
-    if (!validateAndSubmit()) return;
-    isLoading.value = true;
-    // TODO: Your teammate wires Firebase Firestore here
-    // await FirebaseFirestore.instance.collection('listings').add({...})
-    //   'foodName': foodName.text,
-    //   'description': description.text,
-    //   'category': selectedCategory.value,
-    //   'dietaryType': selectedDietaryType.value,
-    //   'quantity': quantity.text,
-    //   'unit': selectedUnit.value,
-    //   'expiryDate': expiryDate.value,
-    //   'pickupLocation': pickupLocation.text,
-    //   'pickupFrom': pickupFrom.value.toString(),
-    //   'pickupTo': pickupTo.value.toString(),
-    //   'pickupInstructions': pickupInstructions.text,
-    //   'deliveryOption': selectedDeliveryOption.value,
-    //   'donorId': FirebaseAuth.instance.currentUser!.uid,
-    //   'status': 'available',
-    //   'createdAt': FieldValue.serverTimestamp(),
-    // });
-    await Future.delayed(const Duration(seconds: 2)); // mock delay
-    isLoading.value = false;
-    Get.back();
-    Get.snackbar(
-      '🎉 Listing Posted!',
-      'Your food listing is now live. Recipients can claim it.',
-      backgroundColor: const Color(0xFF0F6E56),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
-  }
+    if (!formKey.currentState!.validate()) return;
+    if (selectedCategory.value.isEmpty || selectedDietaryType.value.isEmpty || expiryDate.value == null || pickupFrom.value == null) {
+      Get.snackbar('Error', 'Please fill all required fields');
+      return;
+    }
 
-  @override
-  void onClose() {
-    foodName.dispose();
-    description.dispose();
-    quantity.dispose();
-    pickupLocation.dispose();
-    pickupInstructions.dispose();
-    super.onClose();
+    try {
+      isLoading.value = true;
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      await _db.collection('FoodListings').add({
+        'DonorId': user.uid,
+        'DonorName': UserController.instance.userName.value,
+        'FoodName': foodName.text.trim(),
+        'Description': description.text.trim(),
+        'Category': selectedCategory.value,
+        'DietaryType': selectedDietaryType.value,
+        'Quantity': '${quantity.text.trim()} ${selectedUnit.value}',
+        'ExpiryDate': Timestamp.fromDate(expiryDate.value!),
+        'PickupLocation': pickupLocation.text.trim(),
+        'PickupWindow': formattedPickupWindow,
+        'DeliveryOption': selectedDeliveryOption.value,
+        'Status': 'Available',
+        'CreatedAt': FieldValue.serverTimestamp(),
+      });
+
+      isLoading.value = false;
+      Get.back();
+      Get.snackbar('Success', 'Food listing posted successfully!', backgroundColor: Colors.green, colorText: Colors.white);
+    } catch (e) {
+      isLoading.value = false;
+      Get.snackbar('Error', e.toString());
+    }
   }
 }
 
@@ -211,7 +173,6 @@ class PostFoodScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(PostFoodController());
-
     return FScreenBackground(
       child: SafeArea(
         child: Column(
@@ -221,452 +182,103 @@ class PostFoodScreen extends StatelessWidget {
               child: Form(
                 key: controller.formKey,
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── SECTION 1: Food Info ──
                       _SectionHeader(icon: Iconsax.cake, title: 'Food Information'),
                       const SizedBox(height: 14),
-
-                      // Food name
-                      FTextField(
-                        controller: controller.foodName,
-                        label: 'Food Name *',
-                        prefixIcon: Iconsax.cake,
-                        validator: (v) => v == null || v.isEmpty ? 'Food name is required' : null,
-                      ),
+                      FTextField(controller: controller.foodName, label: 'Food Name *', prefixIcon: Iconsax.cake),
                       const SizedBox(height: 14),
-
-                      // Description
-                      FTextField(
-                        controller: controller.description,
-                        label: 'Description',
-                        prefixIcon: Iconsax.document_text,
-                        maxLines: 3,
-                      ),
+                      FTextField(controller: controller.description, label: 'Description', prefixIcon: Iconsax.document_text, maxLines: 3),
                       const SizedBox(height: 14),
-
-                      // Category dropdown
                       _SectionLabel(label: 'Category *'),
                       const SizedBox(height: 8),
                       Obx(() => Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: controller.categories.map((cat) {
-                          final isSelected = controller.selectedCategory.value == cat;
-                          return GestureDetector(
-                            onTap: () => controller.selectedCategory.value = cat,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                gradient: isSelected
-                                    ? const LinearGradient(colors: [Color(0xFFEF9F27), Color(0xFFBA7517)])
-                                    : null,
-                                color: isSelected ? null : const Color(0xFF0F6E56).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? Colors.transparent
-                                      : const Color(0xFF1D9E75).withValues(alpha: 0.3),
-                                ),
-                              ),
-                              child: Text(
-                                cat,
-                                style: TextStyle(
-                                  color: isSelected ? Colors.white : const Color(0xFF5DCAA5),
-                                  fontSize: 12,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                        spacing: 8, runSpacing: 8,
+                        children: controller.categories.map((cat) => _ChipSelect(
+                          label: cat, 
+                          isSelected: controller.selectedCategory.value == cat,
+                          onTap: () => controller.selectedCategory.value = cat,
+                        )).toList(),
                       )),
                       const SizedBox(height: 14),
-
-                      // Dietary type
                       _SectionLabel(label: 'Dietary Type *'),
                       const SizedBox(height: 8),
                       Obx(() => Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: controller.dietaryTypes.map((type) {
-                          final isSelected = controller.selectedDietaryType.value == type;
-                          return GestureDetector(
-                            onTap: () => controller.selectedDietaryType.value = type,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFF1D9E75).withValues(alpha: 0.25)
-                                    : const Color(0xFF0F6E56).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? const Color(0xFF1D9E75)
-                                      : const Color(0xFF1D9E75).withValues(alpha: 0.25),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (isSelected) ...[
-                                    const Icon(Iconsax.tick_circle, color: Color(0xFF5DCAA5), size: 13),
-                                    const SizedBox(width: 5),
-                                  ],
-                                  Text(
-                                    type,
-                                    style: TextStyle(
-                                      color: isSelected ? const Color(0xFF5DCAA5) : const Color(0xFF5DCAA5).withValues(alpha: 0.6),
-                                      fontSize: 12,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                        spacing: 8, runSpacing: 8,
+                        children: controller.dietaryTypes.map((type) => _ChipSelect(
+                          label: type, 
+                          isSelected: controller.selectedDietaryType.value == type,
+                          onTap: () => controller.selectedDietaryType.value = type,
+                        )).toList(),
                       )),
                       const SizedBox(height: 24),
-
-                      // ── SECTION 2: Quantity & Expiry ──
                       _SectionHeader(icon: Iconsax.weight, title: 'Quantity & Expiry'),
                       const SizedBox(height: 14),
-
-                      // Quantity + unit row
                       Row(
                         children: [
-                          Expanded(
-                            flex: 2,
-                            child: FTextField(
-                              controller: controller.quantity,
-                              label: 'Quantity *',
-                              prefixIcon: Iconsax.weight,
-                              keyboardType: TextInputType.number,
-                              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                            ),
-                          ),
+                          Expanded(flex: 2, child: FTextField(controller: controller.quantity, label: 'Quantity *', keyboardType: TextInputType.number)),
                           const SizedBox(width: 12),
-                          Expanded(
-                            child: Obx(() => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFF1D9E75).withValues(alpha: 0.4),
-                                ),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: controller.selectedUnit.value,
-                                  dropdownColor: const Color(0xFF0D3D30),
-                                  style: const TextStyle(color: Color(0xFF9FE1CB), fontSize: 13),
-                                  iconEnabledColor: const Color(0xFF5DCAA5),
-                                  items: controller.units.map((u) => DropdownMenuItem(
-                                    value: u,
-                                    child: Text(u),
-                                  )).toList(),
-                                  onChanged: (v) => controller.selectedUnit.value = v!,
-                                ),
-                              ),
-                            )),
-                          ),
+                          Expanded(child: Obx(() => _DropdownUnit(controller: controller))),
                         ],
                       ),
                       const SizedBox(height: 14),
-
-                      // Expiry date & time
-                      _SectionLabel(label: 'Best Before / Expiry *'),
+                      _SectionLabel(label: 'Expiry Date *'),
                       const SizedBox(height: 8),
-                      Obx(() => GestureDetector(
-                        onTap: controller.pickExpiryDate,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: controller.expiryDate.value != null
-                                  ? const Color(0xFF1D9E75)
-                                  : const Color(0xFF1D9E75).withValues(alpha: 0.4),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Iconsax.calendar, color: Color(0xFF5DCAA5), size: 18),
-                              const SizedBox(width: 10),
-                              Text(
-                                controller.formattedExpiryDate,
-                                style: TextStyle(
-                                  color: controller.expiryDate.value != null
-                                      ? const Color(0xFF9FE1CB)
-                                      : const Color(0xFF5DCAA5).withValues(alpha: 0.5),
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const Spacer(),
-                              Icon(
-                                Iconsax.arrow_right_3,
-                                color: const Color(0xFF5DCAA5).withValues(alpha: 0.4),
-                                size: 16,
-                              ),
-                            ],
-                          ),
-                        ),
-                      )),
+                      Obx(() => _DateTimeTile(label: controller.formattedExpiryDate, icon: Iconsax.calendar, onTap: controller.pickExpiryDate)),
                       const SizedBox(height: 24),
-
-                      // ── SECTION 3: Photos ──
-                      _SectionHeader(icon: Iconsax.image, title: 'Photos'),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Add photos to help recipients know what to expect',
-                        style: TextStyle(
-                          color: const Color(0xFF5DCAA5).withValues(alpha: 0.6),
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Obx(() => SizedBox(
-                        height: 100,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            // Add photo button
-                            GestureDetector(
-                              onTap: () {
-                                // TODO: image_picker integration
-                              },
-                              child: Container(
-                                width: 100,
-                                height: 100,
-                                margin: const EdgeInsets.only(right: 10),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: const Color(0xFF1D9E75).withValues(alpha: 0.3),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Iconsax.camera, color: const Color(0xFF5DCAA5).withValues(alpha: 0.6), size: 28),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      'Add Photo',
-                                      style: TextStyle(
-                                        color: const Color(0xFF5DCAA5).withValues(alpha: 0.6),
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            // Show selected images
-                            ...controller.selectedImages.map((path) => Container(
-                              width: 100,
-                              height: 100,
-                              margin: const EdgeInsets.only(right: 10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                color: const Color(0xFF0F6E56),
-                              ),
-                              child: const Icon(Iconsax.image, color: Color(0xFF5DCAA5)),
-                            )),
-                          ],
-                        ),
-                      )),
-                      const SizedBox(height: 24),
-
-                      // ── SECTION 4: Pickup Details ──
                       _SectionHeader(icon: Iconsax.location, title: 'Pickup Details'),
                       const SizedBox(height: 14),
 
-                      // Pickup location
+                      // PICKUP LOCATION WITH TRACK BUTTON
                       FTextField(
                         controller: controller.pickupLocation,
                         label: 'Pickup Address *',
                         prefixIcon: Iconsax.location,
-                        validator: (v) => v == null || v.isEmpty ? 'Pickup address is required' : null,
-                        suffixIcon: GestureDetector(
-                          onTap: () {
-                            // TODO: Open map picker
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.all(12),
-                            child: Icon(Iconsax.map, color: Color(0xFFEF9F27), size: 20),
-                          ),
-                        ),
+                        suffixIcon: Obx(() => IconButton(
+                          onPressed: controller.isLocationLoading.value ? null : controller.getCurrentLocation,
+                          icon: controller.isLocationLoading.value 
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFEF9F27)))
+                              : const Icon(Iconsax.gps, color: Color(0xFFEF9F27)),
+                          tooltip: 'Track my current location',
+                        )),
                       ),
-                      const SizedBox(height: 14),
-
-                      // Pickup time window
-                      _SectionLabel(label: 'Pickup Time Window *'),
                       const SizedBox(height: 8),
-                      Obx(() => GestureDetector(
-                        onTap: controller.pickTimeWindow,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F6E56).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: (controller.pickupFrom.value != null)
-                                  ? const Color(0xFF1D9E75)
-                                  : const Color(0xFF1D9E75).withValues(alpha: 0.4),
+                      GestureDetector(
+                        onTap: controller.getCurrentLocation,
+                        child: Row(
+                          children: [
+                            const Icon(Iconsax.gps, color: Color(0xFF5DCAA5), size: 14),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Track my current location',
+                              style: TextStyle(color: const Color(0xFF5DCAA5).withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w500),
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Iconsax.clock, color: Color(0xFF5DCAA5), size: 18),
-                              const SizedBox(width: 10),
-                              Text(
-                                controller.formattedPickupWindow,
-                                style: TextStyle(
-                                  color: controller.pickupFrom.value != null
-                                      ? const Color(0xFF9FE1CB)
-                                      : const Color(0xFF5DCAA5).withValues(alpha: 0.5),
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const Spacer(),
-                              Icon(
-                                Iconsax.arrow_right_3,
-                                color: const Color(0xFF5DCAA5).withValues(alpha: 0.4),
-                                size: 16,
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
-                      )),
+                      ),
+
                       const SizedBox(height: 14),
-
-                      // Pickup instructions
-                      FTextField(
-                        controller: controller.pickupInstructions,
-                        label: 'Pickup Instructions (Optional)',
-                        prefixIcon: Iconsax.info_circle,
-                        maxLines: 2,
-                      ),
-                      const SizedBox(height: 24),
-
-                      // ── SECTION 5: Delivery Option ──
-                      _SectionHeader(icon: Iconsax.truck, title: 'Delivery Option'),
+                      _SectionLabel(label: 'Pickup Window *'),
                       const SizedBox(height: 8),
-                      Text(
-                        'How can recipients get this food?',
-                        style: TextStyle(
-                          color: const Color(0xFF5DCAA5).withValues(alpha: 0.6),
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Obx(() => Column(
-                        children: [
-                          _DeliveryOptionCard(
-                            icon: Iconsax.man,
-                            title: 'Self Pickup',
-                            subtitle: 'Recipient comes to your location',
-                            value: 'self_pickup',
-                            selected: controller.selectedDeliveryOption.value,
-                            onTap: () => controller.selectedDeliveryOption.value = 'self_pickup',
-                          ),
-                          const SizedBox(height: 10),
-                          _DeliveryOptionCard(
-                            icon: Iconsax.truck,
-                            title: 'Volunteer Delivery',
-                            subtitle: 'A FoodLink volunteer picks up & delivers',
-                            value: 'volunteer',
-                            selected: controller.selectedDeliveryOption.value,
-                            onTap: () => controller.selectedDeliveryOption.value = 'volunteer',
-                          ),
-                          const SizedBox(height: 10),
-                          _DeliveryOptionCard(
-                            icon: Iconsax.people,
-                            title: 'Both Options',
-                            subtitle: 'Let recipients or volunteers pick it up',
-                            value: 'both',
-                            selected: controller.selectedDeliveryOption.value,
-                            onTap: () => controller.selectedDeliveryOption.value = 'both',
-                          ),
-                        ],
-                      )),
+                      Obx(() => _DateTimeTile(label: controller.formattedPickupWindow, icon: Iconsax.clock, onTap: controller.pickTimeWindow)),
                       const SizedBox(height: 32),
-
-                      // ── SUBMIT BUTTON ──
                       Obx(() => GestureDetector(
                         onTap: controller.isLoading.value ? null : controller.submitListing,
                         child: Container(
-                          width: double.infinity,
-                          height: 56,
+                          width: double.infinity, height: 56,
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFEF9F27), Color(0xFFBA7517)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                            gradient: const LinearGradient(colors: [Color(0xFFEF9F27), Color(0xFFBA7517)]),
                             borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFEF9F27).withValues(alpha: 0.35),
-                                blurRadius: 20,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
                           ),
                           child: Center(
-                            child: controller.isLoading.value
-                                ? const SizedBox(
-                              width: 22, height: 22,
-                              child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2.5,
-                              ),
-                            )
-                                : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Iconsax.send_2, color: Colors.white, size: 18),
-                                SizedBox(width: 10),
-                                Text(
-                                  'Post Food Listing',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            child: controller.isLoading.value 
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text('Post Food Listing', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       )),
-                      const SizedBox(height: 12),
-
-                      // Save as draft
-                      SizedBox(
-                        width: double.infinity,
-                        child: TextButton(
-                          onPressed: () => Get.snackbar('Draft Saved', 'Your listing has been saved as draft',
-                              backgroundColor: const Color(0xFF0F6E56), colorText: Colors.white),
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF5DCAA5),
-                          ),
-                          child: const Text(
-                            'Save as Draft',
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -680,42 +292,11 @@ class PostFoodScreen extends StatelessWidget {
 
   Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => Get.back(),
-            child: Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F6E56).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF1D9E75).withValues(alpha: 0.3)),
-              ),
-              child: const Icon(Iconsax.arrow_left, color: Color(0xFF5DCAA5), size: 20),
-            ),
-          ),
-          const SizedBox(width: 14),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Post Food',
-                style: TextStyle(
-                  color: Color(0xFF9FE1CB),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                'Share your surplus food',
-                style: TextStyle(
-                  color: Color(0xFF5DCAA5),
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
+          IconButton(onPressed: () => Get.back(), icon: const Icon(Iconsax.arrow_left, color: Color(0xFF5DCAA5))),
+          const Text('Post Food', style: TextStyle(color: Color(0xFF9FE1CB), fontSize: 20, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -723,153 +304,89 @@ class PostFoodScreen extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  final IconData icon;
-  final String title;
+  final IconData icon; final String title;
   const _SectionHeader({required this.icon, required this.title});
-
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 32, height: 32,
-          decoration: BoxDecoration(
-            color: const Color(0xFF1D9E75).withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: const Color(0xFF5DCAA5), size: 16),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Color(0xFF9FE1CB),
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Container(
-            height: 1,
-            color: const Color(0xFF1D9E75).withValues(alpha: 0.2),
-          ),
-        ),
-      ],
-    );
+    return Row(children: [
+      Icon(icon, color: const Color(0xFF5DCAA5), size: 18),
+      const SizedBox(width: 10),
+      Text(title, style: const TextStyle(color: Color(0xFF9FE1CB), fontWeight: FontWeight.bold)),
+    ]);
   }
 }
 
 class _SectionLabel extends StatelessWidget {
   final String label;
   const _SectionLabel({required this.label});
-
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        color: Color(0xFF5DCAA5),
-        fontSize: 13,
-        fontWeight: FontWeight.w500,
+    return Text(label, style: const TextStyle(color: Color(0xFF5DCAA5), fontSize: 13));
+  }
+}
+
+class _ChipSelect extends StatelessWidget {
+  final String label; final bool isSelected; final VoidCallback onTap;
+  const _ChipSelect({required this.label, required this.isSelected, required this.onTap});
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1D9E75) : const Color(0xFF0F6E56).withOpacity(0.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFF1D9E75).withOpacity(0.3)),
+        ),
+        child: Text(label, style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF5DCAA5), fontSize: 12)),
       ),
     );
   }
 }
 
-class _DeliveryOptionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String value;
-  final String selected;
-  final VoidCallback onTap;
-
-  const _DeliveryOptionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.selected,
-    required this.onTap,
-  });
-
+class _DateTimeTile extends StatelessWidget {
+  final String label; final IconData icon; final VoidCallback onTap;
+  const _DateTimeTile({required this.label, required this.icon, required this.onTap});
   @override
   Widget build(BuildContext context) {
-    final isSelected = value == selected;
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF1D9E75).withValues(alpha: 0.15)
-              : const Color(0xFF0F6E56).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF1D9E75)
-                : const Color(0xFF1D9E75).withValues(alpha: 0.2),
-            width: isSelected ? 1.5 : 1,
-          ),
+          color: const Color(0xFF0F6E56).withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF1D9E75).withOpacity(0.4)),
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 42, height: 42,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF1D9E75).withValues(alpha: 0.25)
-                    : const Color(0xFF0F6E56).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                icon,
-                color: isSelected ? const Color(0xFF5DCAA5) : const Color(0xFF5DCAA5).withValues(alpha: 0.5),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: isSelected ? const Color(0xFF9FE1CB) : const Color(0xFF9FE1CB).withValues(alpha: 0.7),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: const Color(0xFF5DCAA5).withValues(alpha: 0.6),
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 20, height: 20,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? const Color(0xFF1D9E75) : const Color(0xFF1D9E75).withValues(alpha: 0.3),
-                  width: 2,
-                ),
-                color: isSelected ? const Color(0xFF1D9E75) : Colors.transparent,
-              ),
-              child: isSelected
-                  ? const Icon(Icons.check, color: Colors.white, size: 12)
-                  : null,
-            ),
-          ],
+        child: Row(children: [
+          Icon(icon, color: const Color(0xFF5DCAA5), size: 18),
+          const SizedBox(width: 10),
+          Text(label, style: const TextStyle(color: Color(0xFF9FE1CB))),
+        ]),
+      ),
+    );
+  }
+}
+
+class _DropdownUnit extends StatelessWidget {
+  final PostFoodController controller;
+  const _DropdownUnit({required this.controller});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F6E56).withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF1D9E75).withOpacity(0.4)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: controller.selectedUnit.value,
+          dropdownColor: const Color(0xFF0D3D30),
+          items: controller.units.map((u) => DropdownMenuItem(value: u, child: Text(u, style: const TextStyle(color: Color(0xFF9FE1CB))))).toList(),
+          onChanged: (v) => controller.selectedUnit.value = v!,
         ),
       ),
     );

@@ -10,6 +10,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../../../../../common/SignUp_Login/social_button.dart';
+import '../../controllers/login_controller.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key, required this.role});
@@ -42,8 +43,8 @@ class SignUpScreen extends StatelessWidget {
                 /// Header — logo + title + subtitle + role badge
                 _SignupHeader(roleLabel: roleLabel),
 
-                /// Form
-                const SignUpFormWidget(),
+                /// Form - PASSING ROLE HERE
+                SignUpFormWidget(role: role),
 
                 /// Divider
                 FormDivider(
@@ -157,6 +158,7 @@ class _SignupSocialFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loginController = Get.put(LoginController());
     return Column(
       children: [
         /// Social buttons row
@@ -166,19 +168,7 @@ class _SignupSocialFooter extends StatelessWidget {
             SocialIconButton(
               icon: FontAwesomeIcons.google,
               color: const Color(0xFFDB4437),
-              onTap: () {},
-            ),
-            const SizedBox(width: FSizzes.spaceBtwItems),
-            SocialIconButton(
-              icon: FontAwesomeIcons.facebook,
-              color: const Color(0xFF1877F2),
-              onTap: () {},
-            ),
-            const SizedBox(width: FSizzes.spaceBtwItems),
-            SocialIconButton(
-              icon: FontAwesomeIcons.apple,
-              color: const Color(0xFF9FE1CB),
-              onTap: () {},
+              onTap: () => loginController.googleSignIn(),
             ),
           ],
         ),

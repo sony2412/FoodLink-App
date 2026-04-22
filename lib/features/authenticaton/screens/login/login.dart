@@ -23,7 +23,6 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(LoginController());
-    final String role = Get.arguments ?? 'recipient';
     final dark = FHelperFunctions.isDarkMode(context);
 
     return FScreenBackground(
@@ -145,7 +144,7 @@ class LoginScreen extends StatelessWidget {
                         () => GestureDetector(
                           onTap: controller.isLoading.value
                               ? null
-                              : () => controller.login(role),
+                              : () => controller.login(),
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
@@ -229,19 +228,7 @@ class LoginScreen extends StatelessWidget {
                   SocialIconButton(
                     icon: FontAwesomeIcons.google,
                     color: const Color(0xFFDB4437),
-                    onTap: () {},
-                  ),
-                  const SizedBox(width: FSizzes.spaceBtwItems),
-                  SocialIconButton(
-                    icon: FontAwesomeIcons.facebook,
-                    color: const Color(0xFF1877F2),
-                    onTap: () {},
-                  ),
-                  const SizedBox(width: FSizzes.spaceBtwItems),
-                  SocialIconButton(
-                    icon: FontAwesomeIcons.apple,
-                    color: const Color(0xFF9FE1CB),
-                    onTap: () {},
+                    onTap: () => controller.googleSignIn(),
                   ),
                 ],
               ),

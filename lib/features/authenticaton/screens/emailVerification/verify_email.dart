@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:foodlink/features/authenticaton/screens/successScreen/success_screen.dart';
+import 'package:foodlink/features/authenticaton/screens/emailVerification/mail_controller.dart';
 import 'package:foodlink/utils/helpers/helper_functions.dart';
 import 'package:get/get.dart';
 
@@ -14,12 +14,15 @@ class VerifyEmailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(MailController());
+
     return Scaffold(
       backgroundColor: const Color(0xFF0D3D30),
 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             onPressed: () => Get.offAll(() => const LoginScreen()),
@@ -33,7 +36,6 @@ class VerifyEmailScreen extends StatelessWidget {
 
       body: Stack(
         children: [
-
           /// Ambient blob — top left
           Positioned(
             top: -80, left: -80,
@@ -101,12 +103,12 @@ class VerifyEmailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: FSizzes.spaceBtwSections),
 
-                  /// Continue button — amber gradient
+                  /// Continue button
                   SizedBox(
                     width: double.infinity,
                     height: 52,
                     child: GestureDetector(
-                      onTap: () => Get.to(() => const SuccessScreen()),
+                      onTap: () => controller.checkEmailVerificationStatus(),
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
@@ -140,11 +142,11 @@ class VerifyEmailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: FSizzes.spaceBtwItems),
 
-                  /// Resend email — teal text button
+                  /// Resend email
                   SizedBox(
                     width: double.infinity,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () => controller.sendVerificationEmail(),
                       style: TextButton.styleFrom(
                         foregroundColor: const Color(0xFF5DCAA5),
                         backgroundColor:

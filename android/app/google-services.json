@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "353823702716",
+    "project_id": "foodlink-28e63",
+    "storage_bucket": "foodlink-28e63.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353823702716:android:fb941ea7ede6cfb5199ab9",
+        "android_client_info": {
+          "package_name": "com.example.foodlink"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "353823702716-r2ko4rkpqg8l62r3dn1cvjo21esotfm9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.foodlink",
+            "certificate_hash": "4903393cde538a9282335946ee608f5f5cf1ac70"
+          }
+        },
+        {
+          "client_id": "353823702716-84a4hmkigr7ks88jqstgobq89kg7k4tp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrANpey6asfharmlYfrELbmUYoQCHX0Sc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "353823702716-84a4hmkigr7ks88jqstgobq89kg7k4tp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "353823702716-9ksv3fpk0lphg4abcbra5ca5v7kf8lqi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.foodlink"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

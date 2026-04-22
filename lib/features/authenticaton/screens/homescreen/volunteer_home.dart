@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 
 import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/constants/text_strings.dart';
+import '../../controllers/user_controller.dart';
 import '../NotificationScreen/notification_screen.dart';
 import '../ProfileScreen/profile_screen.dart';
 import '../login/login.dart';
@@ -77,6 +78,7 @@ class _HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userController = UserController.instance;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: FSizzes.defaultSpace),
@@ -99,14 +101,14 @@ class _HomeTab extends StatelessWidget {
                         fontSize: 13,
                       ),
                     ),
-                    const Text(
-                      'Hey, Ravi 🚴',
-                      style: TextStyle(
+                    Obx(() => Text(
+                      'Hey, ${userController.userName.value} 🚴',
+                      style: const TextStyle(
                         color: Color(0xFF9FE1CB),
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                       ),
-                    ),
+                    )),
                   ],
                 ),
                 Row(
@@ -579,6 +581,7 @@ class _ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userController = UserController.instance;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: FSizzes.defaultSpace),
@@ -590,18 +593,18 @@ class _ProfileTab extends StatelessWidget {
                 children: [
                   Stack(
                     children: [
-                      CircleAvatar(
+                      Obx(() => CircleAvatar(
                         radius: 44,
                         backgroundColor: const Color(0xFF0F6E56),
-                        child: const Text(
-                          'R',
-                          style: TextStyle(
+                        child: Text(
+                          userController.userName.value.isNotEmpty ? userController.userName.value[0] : 'U',
+                          style: const TextStyle(
                             color: Color(0xFF9FE1CB),
                             fontSize: 36,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ),
+                      )),
                       Positioned(
                         bottom: 0, right: 0,
                         child: Container(
@@ -621,14 +624,14 @@ class _ProfileTab extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Ravi Sharma',
-                    style: TextStyle(
+                  Obx(() => Text(
+                    userController.userName.value,
+                    style: const TextStyle(
                       color: Color(0xFF9FE1CB),
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(
