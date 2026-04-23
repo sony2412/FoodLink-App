@@ -217,21 +217,6 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: FSizzes.spaceBtwSections),
 
-              /// Divider
-              FormDivider(dividerText: FTexts.orSignInWith.capitalize!),
-              const SizedBox(height: FSizzes.spaceBtwSections),
-
-              /// Social Login Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SocialIconButton(
-                    icon: FontAwesomeIcons.google,
-                    color: const Color(0xFFDB4437),
-                    onTap: () => controller.googleSignIn(),
-                  ),
-                ],
-              ),
               const SizedBox(height: FSizzes.spaceBtwSections),
             ],
           ),

@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.foodlink"
-        minSdk = 23 // CRITICAL: Required for Firebase and Location plugins
+        minSdk = flutter.minSdkVersion // CRITICAL: Required for Firebase and Location plugins
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

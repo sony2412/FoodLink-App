@@ -9,7 +9,6 @@ import 'package:foodlink/utils/constants/text_strings.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../../../../../common/SignUp_Login/social_button.dart';
 import '../../controllers/login_controller.dart';
 
 class SignUpScreen extends StatelessWidget {
@@ -46,19 +45,12 @@ class SignUpScreen extends StatelessWidget {
                 /// Form - PASSING ROLE HERE
                 SignUpFormWidget(role: role),
 
-                /// Divider
-                FormDivider(
-                  dividerText: FTexts.orSignInWith.capitalize!,
-                ),
-                const SizedBox(height: FSizzes.spaceBtwSections),
-
-                /// Social footer
-                _SignupSocialFooter(
+                /// Already have account footer
+                _SignupFooter(
                   text1: '${FTexts.alreadyHaveAccount.split('?').first}? ',
                   text2: FTexts.signIn,
                   onPressed: () => Get.off(
                     () => const LoginScreen(),
-                    arguments: role,
                   ),
                 ),
 
@@ -145,8 +137,8 @@ class _SignupHeader extends StatelessWidget {
   }
 }
 
-class _SignupSocialFooter extends StatelessWidget {
-  const _SignupSocialFooter({
+class _SignupFooter extends StatelessWidget {
+  const _SignupFooter({
     required this.text1,
     required this.text2,
     required this.onPressed,
@@ -158,22 +150,8 @@ class _SignupSocialFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loginController = Get.put(LoginController());
     return Column(
       children: [
-        /// Social buttons row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SocialIconButton(
-              icon: FontAwesomeIcons.google,
-              color: const Color(0xFFDB4437),
-              onTap: () => loginController.googleSignIn(),
-            ),
-          ],
-        ),
-        const SizedBox(height: FSizzes.spaceBtwSections),
-
         /// Already have account
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

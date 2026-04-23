@@ -30,13 +30,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       'icon': Iconsax.heart,
       'badge': 'Receive food',
     },
-    {
-      'id': 'volunteer',
-      'title': 'Volunteer',
-      'subtitle': 'Help pick up and deliver food between donors and recipients.',
-      'icon': Iconsax.truck,
-      'badge': 'Deliver food',
-    },
   ];
 
   @override

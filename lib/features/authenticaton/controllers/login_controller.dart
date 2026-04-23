@@ -6,8 +6,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'user_controller.dart';
 import '../screens/homescreen/donor_home.dart';
 import '../screens/homescreen/recipitent_home.dart';
-import '../screens/homescreen/volunteer_home.dart';
-
 class LoginController extends GetxController {
   static LoginController get instance => Get.find();
 
@@ -122,8 +120,6 @@ class LoginController extends GetxController {
       Get.offAll(() => const DonorDashboard());
     } else if (role.contains('recipient')) {
       Get.offAll(() => const RecipientDashboard());
-    } else if (role.contains('volunteer')) {
-      Get.offAll(() => const VolunteerDashboard());
     } else {
       // Default fallback
       Get.offAll(() => const RecipientDashboard());

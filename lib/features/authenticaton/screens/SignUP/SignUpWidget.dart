@@ -53,6 +53,61 @@ class SignUpFormWidget extends StatelessWidget {
             ),
             const SizedBox(height: FSizzes.spaceBtwInputFields),
 
+            // Dropdown for User Type
+            Obx(() => DropdownButtonFormField<String>(
+              value: (role == 'donor' ? ['Individual', 'Restaurant', 'Event Organizer', 'Household', 'Other'] : ['NGO', 'Orphanage', 'Old Age Home', 'Individual', 'Other']).contains(controller.userType.value) ? controller.userType.value : 'Individual',
+              dropdownColor: const Color(0xFF0F6E56),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Iconsax.category, color: Color(0xFF5DCAA5), size: 20),
+                labelText: role == 'donor' ? 'Donor Type' : 'Recipient Type',
+                labelStyle: const TextStyle(color: Color(0xFF5DCAA5), fontSize: 13),
+                floatingLabelStyle: const TextStyle(color: Color(0xFF9FE1CB)),
+                filled: true,
+                fillColor: const Color(0xFF0F6E56).withOpacity(0.2),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: const Color(0xFF1D9E75).withOpacity(0.3))),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: const Color(0xFF1D9E75).withOpacity(0.3))),
+              ),
+              items: (role == 'donor' ? ['Individual', 'Restaurant', 'Event Organizer', 'Household', 'Other'] : ['NGO', 'Orphanage', 'Old Age Home', 'Individual', 'Other'])
+                  .map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
+              onChanged: (val) {
+                if (val != null) controller.userType.value = val;
+              },
+            )),
+            const SizedBox(height: FSizzes.spaceBtwInputFields),
+
+            Obx(() {
+              final isIndividual = controller.userType.value == 'Individual' || controller.userType.value == 'Household';
+              return isIndividual ? const SizedBox.shrink() : Column(
+                children: [
+                  FTextField(
+                    controller: controller.organizationName,
+                    keyboardType: TextInputType.name,
+                    label: role == 'donor' ? 'Organization / Business Name' : 'NGO / Shelter Name',
+                    prefixIcon: Iconsax.building,
+                    validator: (value) => value == null || value.isEmpty ? 'Name is required' : null,
+                  ),
+                  const SizedBox(height: FSizzes.spaceBtwInputFields),
+                ],
+              );
+            }),
+
+            // Address field with Geolocation
+            FTextField(
+              controller: controller.organizationAddress,
+              keyboardType: TextInputType.streetAddress,
+              label: 'Address / Area',
+              prefixIcon: Iconsax.location,
+              validator: (value) => value == null || value.isEmpty ? 'Address is required' : null,
+              suffixIcon: Obx(() => IconButton(
+                onPressed: controller.isLocationLoading.value ? null : controller.getCurrentLocation,
+                icon: controller.isLocationLoading.value 
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFEF9F27)))
+                  : const Icon(Iconsax.gps, color: Color(0xFFEF9F27), size: 20),
+              )),
+            ),
+            const SizedBox(height: FSizzes.spaceBtwInputFields),
+
             /// Password
             Obx(
               () => FTextField(

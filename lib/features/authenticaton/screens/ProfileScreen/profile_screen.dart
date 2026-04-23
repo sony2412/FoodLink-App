@@ -1,8 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/constants/text_strings.dart';
+import '../../controllers/user_controller.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key, this.role = 'donor'});
@@ -22,6 +27,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _bioController;
 
   bool _isSaving = false;
+  bool _isLocationLoading = false;
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      setState(() => _isLocationLoading = true);
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) throw 'Location services are disabled.';
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) throw 'Location permissions are denied';
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        throw 'Location permissions are permanently denied.';
+      } 
+
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        setState(() {
+          _addressController.text = '${place.name}, ${place.subLocality}, ${place.locality}, ${place.postalCode}'.replaceAll(RegExp(r'^, '), '');
+        });
+      }
+    } catch (e) {
+      Get.snackbar('Location Error', e.toString(), backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      setState(() => _isLocationLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -37,7 +75,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-    await Future.delayed(const Duration(seconds: 2));
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      await FirebaseFirestore.instance.collection('Users').doc(uid).update({
+        'FullName': _nameController.text,
+        'PhoneNumber': _phoneController.text,
+        'OrganizationName': _orgController.text,
+        'OrganizationAddress': _addressController.text,
+        'Bio': _bioController.text,
+      });
+      UserController.instance.updateUserData(name: _nameController.text);
+    }
     setState(() => _isSaving = false);
     Get.back();
     Get.snackbar(
@@ -55,33 +103,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _orgController = TextEditingController();
+    _addressController = TextEditingController();
+    _bioController = TextEditingController();
+    _loadUserData();
+  }
 
-    if (widget.role == 'donor') {
-      _nameController = TextEditingController(text: 'Rahul Sharma');
-      _emailController = TextEditingController(text: 'rahul@example.com');
-      _phoneController = TextEditingController(text: '+91 98765 43210');
-      _orgController = TextEditingController(text: 'Spice Garden Restaurant');
-      _addressController = TextEditingController(text: 'Sector 21, Nagpur');
-      _bioController = TextEditingController(
-          text: 'Donating surplus food to help others');
-    }
-    else if (widget.role == 'recipient') {
-      _nameController = TextEditingController(text: 'Sarah Johnson');
-      _emailController = TextEditingController(text: 'ngo@example.com');
-      _phoneController = TextEditingController(text: '+91 91234 56789');
-      _orgController = TextEditingController(text: 'Helping Hands NGO');
-      _addressController = TextEditingController(text: 'Nagpur City');
-      _bioController = TextEditingController(
-          text: 'Providing food support to those in need');
-    }
-    else {
-      _nameController = TextEditingController(text: 'Ravi Sharma');
-      _emailController = TextEditingController(text: 'ravi@example.com');
-      _phoneController = TextEditingController(text: '+91 99887 66554');
-      _orgController = TextEditingController(text: '');
-      _addressController = TextEditingController(text: 'Nagpur');
-      _bioController = TextEditingController(
-          text: 'Volunteer delivering food to people');
+  void _loadUserData() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final doc = await FirebaseFirestore.instance.collection('Users').doc(uid).get();
+    if (doc.exists) {
+      final data = doc.data()!;
+      setState(() {
+        _nameController.text = data['FullName'] ?? '';
+        _emailController.text = data['Email'] ?? '';
+        _phoneController.text = data['PhoneNumber'] ?? '';
+        _orgController.text = data['OrganizationName'] ?? '';
+        _addressController.text = data['OrganizationAddress'] ?? '';
+        _bioController.text = data['Bio'] ?? '';
+      });
     }
   }
 
@@ -303,6 +347,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               controller: _addressController,
                               label: 'Address / Area',
                               icon: Iconsax.location,
+                              suffixIcon: IconButton(
+                                onPressed: _isLocationLoading ? null : _getCurrentLocation,
+                                icon: _isLocationLoading 
+                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFEF9F27)))
+                                  : const Icon(Iconsax.gps, color: Color(0xFFEF9F27), size: 20),
+                              ),
                             ),
                             const SizedBox(height: 24),
                           ],
@@ -405,6 +455,7 @@ class _ProfileField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.validator,
     this.maxLines = 1,
+    this.suffixIcon,
   });
 
   final TextEditingController controller;
@@ -413,6 +464,7 @@ class _ProfileField extends StatelessWidget {
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final int maxLines;
+  final Widget? suffixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -424,6 +476,7 @@ class _ProfileField extends StatelessWidget {
       style: const TextStyle(color: Colors.white, fontSize: 14),
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: const Color(0xFF5DCAA5), size: 20),
+        suffixIcon: suffixIcon,
         labelText: label,
         labelStyle: const TextStyle(color: Color(0xFF5DCAA5), fontSize: 13),
         floatingLabelStyle: const TextStyle(color: Color(0xFF9FE1CB)),

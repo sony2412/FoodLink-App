@@ -5,7 +5,7 @@ enum PaymentMethods { paypal, googlePay, applePay, visa, masterCard, creditCard,
 
 
 
-enum UserRole { donor, recipient, volunteer, ngo }
+enum UserRole { donor, recipient }
 
 enum FoodCategory {
   cookedFood,
