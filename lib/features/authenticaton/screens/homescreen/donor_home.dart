@@ -8,7 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/constants/sizes.dart';
 import '../../controllers/user_controller.dart';
-import '../FindNGO/find_ngo.dart';
 import '../NotificationScreen/notification_screen.dart';
 import '../PostFood/post_food.dart';
 import '../ProfileScreen/profile_screen.dart';
@@ -177,8 +176,7 @@ class _DonorHomePage extends StatelessWidget {
       child: Row(children: [
         Expanded(child: _QuickActionCard(icon: Iconsax.add_circle, label: 'Post Food', subtitle: 'List surplus', color: const Color(0xFFEF9F27), onTap: () => Get.to(() => const PostFoodScreen()))),
         const SizedBox(width: 12),
-        Expanded(child: _QuickActionCard(icon: Iconsax.location, label: 'Find NGOs', subtitle: 'Nearby', color: const Color(0xFF5DCAA5), onTap: () => Get.to(() => const FindNGOsScreen()))),
-      ]),
+        ]),
     );
   }
 

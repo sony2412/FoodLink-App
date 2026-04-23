@@ -9,8 +9,6 @@ import 'package:foodlink/utils/helpers/helper_functions.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-
-import '../../../../common/SignUp_Login/social_button.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/validation/validator.dart';
